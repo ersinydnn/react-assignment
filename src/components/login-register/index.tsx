@@ -42,7 +42,7 @@ const loginUser = async (values: FormValues) => {
 const registerUser = async (values: FormValues) => {
   try {
     const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/api/register`,
+      `${process.env.REACT_APP_BACKEND_URL}/api/login`,
       {
         method: "POST",
         headers: {
