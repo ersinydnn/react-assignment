@@ -2,6 +2,7 @@
   "name": "react-assignment",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@ant-design/charts": "^2.2.1",
     "@antv/g2plot": "^2.4.32",
