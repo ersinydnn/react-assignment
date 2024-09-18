@@ -31,13 +31,20 @@ const Layout: React.FC = () => {
           }
         );
 
+        console.log("Response:", response);
+
+        if (!response.ok) {
+          console.error(
+            "API request failed:",
+            response.status,
+            response.statusText
+          );
+          return;
+        }
+
         const data = await response.json();
 
-        if (response.ok) {
-          setUsername(data.username);
-        } else {
-          console.error(data.message);
-        }
+        setUsername(data.username);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

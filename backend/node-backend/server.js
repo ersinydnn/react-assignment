@@ -23,7 +23,7 @@ const app = express();
 app.use(express.json());
 
 const corsOptions = {
-  origin: "*",
+  origin: "http://localhost:3000",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
@@ -79,6 +79,28 @@ app.post("/api/login", async (req, res) => {
   });
 
   res.status(200).send({ token });
+});
+
+app.get("/api/user", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).send({ message: "Token not found" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const userId = decoded.id;
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).send({ message: "An error occurred", error });
+  }
 });
 
 app.use("/api/companies", companyRoutes);

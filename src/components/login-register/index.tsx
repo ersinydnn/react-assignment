@@ -12,16 +12,18 @@ interface FormValues {
 
 const loginUser = async (values: FormValues) => {
   try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/api/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      }
-    );
+    const backendUrl =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3003"
+        : process.env.REACT_APP_BACKEND_URL;
+
+    const response = await fetch(`${backendUrl}/api/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
 
     const data = await response.json();
     if (response.ok) {
@@ -41,16 +43,18 @@ const loginUser = async (values: FormValues) => {
 
 const registerUser = async (values: FormValues) => {
   try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}/api/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      }
-    );
+    const backendUrl =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:3003"
+        : process.env.REACT_APP_BACKEND_URL;
+
+    const response = await fetch(`${backendUrl}/api/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
 
     const data = await response.json();
     if (response.ok) {

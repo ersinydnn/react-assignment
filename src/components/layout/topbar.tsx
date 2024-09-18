@@ -8,18 +8,10 @@ interface TopbarProps {
 }
 
 const Topbar: React.FC<TopbarProps> = ({ username, toggleLanguage }) => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
   return (
     <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-6 mb-5 flex justify-between items-center shadow-lg rounded-lg">
-      <div className="flex items-center space-x-4">
-        {username ? (
-          <p className="text-lg font-medium">{t("welcome", { username })}</p>
-        ) : (
-          <p>Loading username...</p>
-        )}
-      </div>
-
       <div className="flex items-center space-x-4">
         <button
           onClick={toggleLanguage}
