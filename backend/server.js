@@ -26,7 +26,7 @@ const corsOptions = {
   origin:
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"
-      : "https://react-assignmentt.onrender.com",
+      : "https://react-assignment-7xwr.onrender.com/",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
