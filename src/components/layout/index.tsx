@@ -4,6 +4,7 @@ import Sidebar from "./sidebar";
 import Topbar from "./topbar";
 import { FaBars } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 const Layout: React.FC = () => {
   const [username, setUsername] = useState<string | null>(null);
@@ -21,30 +22,26 @@ const Layout: React.FC = () => {
           return;
         }
 
-        const response = await fetch(
-          `${process.env.REACT_APP_BACKEND_URL}/api/user`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const backendUrl =
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:3003"
+            : process.env.REACT_APP_BACKEND_URL;
 
-        console.log("Response:", response);
+        const response = await axios.get(`${backendUrl}/api/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-        if (!response.ok) {
+        if (response.status === 200) {
+          setUsername(response.data.username);
+        } else {
           console.error(
             "API request failed:",
             response.status,
             response.statusText
           );
-          return;
         }
-
-        const data = await response.json();
-
-        setUsername(data.username);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { message } from "antd";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "antd/dist/reset.css";
 import CardComponent from "./card";
 
@@ -17,23 +18,17 @@ const loginUser = async (values: FormValues) => {
         ? "http://localhost:3003"
         : process.env.REACT_APP_BACKEND_URL;
 
-    const response = await fetch(`${backendUrl}/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    });
+    const response = await axios.post(`${backendUrl}/api/login`, values);
 
-    const data = await response.json();
-    if (response.ok) {
+    if (response.status === 200) {
+      const data = response.data;
       localStorage.setItem("token", data.token);
       return data.token;
     } else {
-      if (data.message === "Invalid credentials") {
+      if (response.data.message === "Invalid credentials") {
         message.error("Invalid username or password.");
       } else {
-        message.error(data.message);
+        message.error(response.data.message);
       }
     }
   } catch (error) {
@@ -48,22 +43,15 @@ const registerUser = async (values: FormValues) => {
         ? "http://localhost:3003"
         : process.env.REACT_APP_BACKEND_URL;
 
-    const response = await fetch(`${backendUrl}/api/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(values),
-    });
+    const response = await axios.post(`${backendUrl}/api/register`, values);
 
-    const data = await response.json();
-    if (response.ok) {
+    if (response.status === 200) {
       message.success("Registration successful!");
     } else {
-      if (data.message === "Username already taken") {
+      if (response.data.message === "Username already taken") {
         message.error("This username is already taken.");
       } else {
-        message.error(data.message);
+        message.error(response.data.message);
       }
     }
   } catch (error) {
