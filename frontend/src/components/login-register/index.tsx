@@ -11,51 +11,52 @@ interface FormValues {
   email?: string;
 }
 
+const backendUrl = "http://localhost:3003";
+
 const loginUser = async (values: FormValues) => {
   try {
-    const backendUrl =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3003"
-        : process.env.REACT_APP_BACKEND_URL;
-
     const response = await axios.post(`${backendUrl}/api/login`, values);
 
     if (response.status === 200) {
       const data = response.data;
       localStorage.setItem("token", data.token);
       return data.token;
-    } else {
-      if (response.data.message === "Invalid credentials") {
-        message.error("Invalid username or password.");
-      } else {
-        message.error(response.data.message);
-      }
     }
-  } catch (error) {
-    message.error("An error occurred during login.");
+  } catch (error: any) {
+    if (error.response && error.response.status === 401) {
+      message.error("Invalid username or password.");
+    } else if (error.response && error.response.status === 404) {
+      message.error("User not found.");
+    } else {
+      console.error("Login Error:", error);
+      message.error("An unexpected error occurred during login.");
+    }
   }
 };
 
 const registerUser = async (values: FormValues) => {
   try {
-    const backendUrl =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3003"
-        : process.env.REACT_APP_BACKEND_URL;
-
     const response = await axios.post(`${backendUrl}/api/register`, values);
+    console.log("Register Response:", response);
 
-    if (response.status === 200) {
-      message.success("Registration successful!");
-    } else {
-      if (response.data.message === "Username already taken") {
-        message.error("This username is already taken.");
-      } else {
-        message.error(response.data.message);
-      }
+    if (response.status === 201) {
+      message.success("Registration successful!"); // Başarı mesajı göster
     }
-  } catch (error) {
-    message.error("An error occurred during registration.");
+  } catch (error: any) {
+    console.log("Register Error Response:", error.response);
+    if (error.response && error.response.status === 400) {
+      const errorMessage = error.response.data.message;
+      if (errorMessage === "This username is already taken") {
+        message.error("This username is already taken.");
+      } else if (errorMessage === "This email is already in use") {
+        message.error("This email is already in use.");
+      } else {
+        message.error(errorMessage);
+      }
+    } else {
+      console.error("Registration Error:", error);
+      message.error("An unexpected error occurred during registration.");
+    }
   }
 };
 
