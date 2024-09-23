@@ -15,18 +15,18 @@ if (!process.env.JWT_SECRET_KEY) {
 }
 
 mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("Connected to MongoDB Atlas"))
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log("MongoDB connection error:", err));
 
 const app = express();
 app.use(express.json());
 
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === "development"
-      ? "http://localhost:3000"
-      : "https://react-assignment-7xwr.onrender.com/",
+  origin: "http://localhost:3000",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
@@ -40,20 +40,30 @@ app.get("/", (req, res) => {
 app.post("/api/register", async (req, res) => {
   const { username, email, password } = req.body;
 
-  const userExists = await User.findOne({ username });
-  if (userExists) {
-    return res.status(400).send({ message: "This username is already taken" });
-  }
-
-  const hashedPassword = bcrypt.hashSync(password, 8);
-
-  const newUser = new User({
-    username,
-    email,
-    password: hashedPassword,
-  });
-
   try {
+    const userExists = await User.findOne({ username });
+    const emailExists = await User.findOne({ email });
+
+    console.log("User Exists:", userExists);
+    console.log("Email Exists:", emailExists);
+
+    if (userExists) {
+      return res
+        .status(400)
+        .send({ message: "This username is already taken" });
+    }
+
+    if (emailExists) {
+      return res.status(400).send({ message: "This email is already in use" });
+    }
+
+    const hashedPassword = bcrypt.hashSync(password, 8);
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
     await newUser.save();
     res.status(201).send({ message: "Registration successful!" });
   } catch (error) {
@@ -67,21 +77,26 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
-  if (!user) {
-    return res.status(404).send({ message: "User not found" });
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const passwordIsValid = bcrypt.compareSync(password, user.password);
+    if (!passwordIsValid) {
+      return res.status(401).send({ message: "Invalid password" });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+      expiresIn: "1h",
+    });
+
+    res.status(200).send({ token });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).send({ message: "An error occurred during login", error });
   }
-
-  const passwordIsValid = bcrypt.compareSync(password, user.password);
-  if (!passwordIsValid) {
-    return res.status(401).send({ message: "Invalid password" });
-  }
-
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
-    expiresIn: "1h",
-  });
-
-  res.status(200).send({ token });
 });
 
 app.get("/api/user", async (req, res) => {
@@ -102,6 +117,7 @@ app.get("/api/user", async (req, res) => {
 
     res.status(200).send(user);
   } catch (error) {
+    console.error("Error fetching user:", error);
     res.status(500).send({ message: "An error occurred", error });
   }
 });
